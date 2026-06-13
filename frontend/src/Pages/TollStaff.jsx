@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../Api/api";
 
 function TollStaff() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ function TollStaff() {
   const [success, setSuccess] = useState("");
   const [history, setHistory] = useState([]);
 
-  const handleCharge = (e) => {
+  const handleCharge = async (e) => {
     e.preventDefault();
 
     const vehicleRegex = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
@@ -27,19 +28,31 @@ function TollStaff() {
       return;
     }
 
-    const newHistory = {
-      id: Date.now(),
-      vehicleNumber: vehicleNumber,
-      amount: 120,
-      time: new Date().toLocaleTimeString(),
-      date: new Date().toLocaleDateString()
-    };
+    try {
+      const response = await API.post("/api/staff/vehicle/charge", {
+        vehicleNumber: vehicleNumber
+      });
 
-    setHistory([newHistory, ...history]);
+      const { amountCharged, remainingBalance, ownerName } = response.data;
 
-    setError("");
-    setSuccess(`Vehicle ${vehicleNumber} charged successfully!`);
-    setVehicleNumber("");
+      const newHistory = {
+        id: Date.now(),
+        vehicleNumber: vehicleNumber,
+        amount: amountCharged,
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString()
+      };
+
+      setHistory([newHistory, ...history]);
+      setError("");
+      setSuccess(`Vehicle ${vehicleNumber} (Owner: ${ownerName}) charged successfully ₹${amountCharged}! Remaining Balance: ₹${remainingBalance.toFixed(2)}`);
+      setVehicleNumber("");
+    } catch (err) {
+      console.error("Charging error:", err);
+      const errMsg = err.response?.data?.message || "Failed to charge vehicle";
+      setError(errMsg);
+      setSuccess("");
+    }
   };
 
   const clearHistory = () => {
@@ -107,7 +120,7 @@ function TollStaff() {
                 )}
 
                 <button type="submit" className="btn btn-primary btn-lg w-100">
-                  Charge Vehicle ₹120
+                  Process Toll Charge
                 </button>
               </form>
 
