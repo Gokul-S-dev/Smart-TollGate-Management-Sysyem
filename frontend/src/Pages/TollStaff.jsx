@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function TollStaff() {
-  const staffName = "John Doe";
+  const navigate = useNavigate();
+  const staffName = localStorage.getItem("username") || "Staff Member";
 
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +46,11 @@ function TollStaff() {
     setHistory([]);
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   return (
     <div className="min-vh-100 bg-light py-5">
       <div className="container">
@@ -62,10 +69,10 @@ function TollStaff() {
 
                 <button
                   type="button"
-                  className="btn btn-outline-primary rounded-circle"
-                  title="View History"
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={handleLogout}
                 >
-                  <i className="bi bi-clock-history fs-5"></i>
+                  Logout
                 </button>
               </div>
 

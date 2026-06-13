@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../Api/api";
 
 const Login = () => {
   const [data, setData] = useState({
@@ -43,7 +43,7 @@ const Login = () => {
     e.preventDefault();
     if (validateForm()) {
       try{
-        const res = await axios.post("http://localhost:8080/api/auth/login",{
+        const res = await API.post("/api/auth/login",{
           username: data.name,
           password: data.password
         });
@@ -53,7 +53,11 @@ const Login = () => {
         localStorage.setItem("username",res.data.username);
 
         alert("Login successful");
-        navigate("/admin");
+        if (res.data.role === "ADMIN") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/toll-staff");
+        }
 
       }catch(err){
         alert("Invalidate username or password");
